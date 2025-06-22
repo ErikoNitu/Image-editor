@@ -1,0 +1,124 @@
+312CA_NituErikoLaurentiu_Tema3
+
+In this program, I have implemented an image editor that can perform the
+following commands: LOAD, SELECT, SELECT ALL, CROP, SAVE, HISTOGRAM, EQUALIZE,
+ROTATE, APPLY, and the EXIT command, which stops the program.
+Additionally, I have handled all error cases where commands were either not
+read correctly or did not receive the appropriate parameters.
+I modularized the program and created a header and separate files for the
+each function.
+
+
+LOAD:
+ - Function used: load_image()
+ - I opened the file received as input in binary format to be able to 
+   use both fscanf (for ASCII format pixels) and fwrite (for binary format
+   pixels).
+ - I read the header and determined the image format, then read the pixels
+   based on that format.
+ - If the image received as input is in grayscale, I saved the pixel values
+   in the .r channel of the rgb_t structure (which has the
+   parameters .r, .g, .b).
+
+SELECT:
+ - Function used: select_image()
+ - I read the four coordinates from input and modified the selection on which
+   the subsequent commands will apply changes.
+ - I stored the coordinates in x1, y1, x2, y2, and for the following commands,
+   modifications were made within this selection.
+
+SELECT ALL:
+ - Function used: select_image()
+ - This command restores the full selection, (0, 0, height, width).
+
+CROP:
+ - Function used: crop_image()
+ - I reduced the image to the current selection.
+ - I used a copy where I saved the entire image, I deallocated the original
+   image matrix and reallocated it with the dimensions height = y2 - y1 and
+   width = x2 - x1.
+ - I updated the image matrix with the values from the selection.
+
+HISTOGRAM:
+ - Function used: histogram()
+ - This command only works for grayscale images and creates a histogram for
+   them using maximum x asterisks and y bins (x, y are received from input).
+ - I used a frequency vector in which I stored the number of occurrences
+   of each pixel value;
+ - I divided the number of pixels (256) to the number of bins to determine the
+   amount of pixels included in each bin and determined the maximum
+   (for each bin I calculated the sum of the pixel's frequency inclued in it)
+ - I applied the formula:
+   (sum of the pixels frequency in the bin / "maximum" bin) * x
+   to determine how many asterisks should be displayed for each bin.
+
+EQUALIZE:
+ - Function used: equalize()
+ - This command performs the histogram equalization for grayscale images.
+ - I used the principles from the HISTOGRAM command.
+ - The pixel values were calculated using the formula: 
+   $$f(a) = 255 \cdot \frac{1}{\text{Area}} \sum_{i=0}^a H(i)$$
+​
+  where:
+   - f(a) represents the new pixel value;
+   - a represents the previous pixel value;
+   - Area represents the image area in pixels;
+   - H(i) represents the number of occurrences of value i in the image.
+
+ROTATE:
+ - Function used: rotate_image()
+ - This command takes an angle as input and rotates the current selection 
+   based on that angle.
+ - The selection must either be a square within the image or the entire image.
+ - For rotating the entire image, I used a copy allocated with inverted
+   dimensions and stored the rotated image in it, then reallocated
+   the initial matrix image and wrote it with the rotated matrix.
+ - I created functions for rotating the image 90 degrees
+   left and 90 degrees right, and performed angle / 4 rotations.
+   - functions used: - rotate_left()
+                     - rotate_right()
+                     - rotate_whole_image_left()
+                     - rotate_whole_image_right()
+
+APPLY:
+ - Function used: apply_image()
+ - This command can take the following parameters: SHARPEN, BLUR,
+   GAUSSIAN_BLUR, and EDGE.
+ - To apply the effect, I created a buffer matrix where I performed the
+   modifications and then overwrote the selection where the effect was to be
+   applied.
+ - For each pixel, I first checked if it was on the edge, as the effect is 
+   not applied to those pixels.
+ - For each non-edge pixel, I considered all of its neighbors, obtaining a 3x3
+   selection. I multiplied each value by the corresponding value from the
+   kernel and summed them, thus obtaining the new pixel.
+
+ APPLY SHARPEN:
+ - Function used: apply_sharpen()
+ - The sharpen kernel used is: 
+ | 0 -1  0 | 
+ | -1 5 -1 | 
+ | 0 -1  0 |
+
+ APPLY BLUR:
+ - Function used: apply_blur()
+ - The blur kernel used is: 
+ | 1 1 1 |  
+ | 1 1 1 | 1/9
+ | 1 1 1 |
+
+ APPLY GAUSSIAN_BLUR:
+ - Function used: apply_gaussian_blur()
+ - The Gaussian blur kernel used is: 
+ | 1 2 1 | 
+ | 2 4 2 | 1/16 
+ | 1 2 1 |
+
+ APPLY EDGE:
+ - Function used: apply_edge()
+ - The edge kernel used is: 
+ | -1 -1 -1 | 
+ | -1  8 -1 | 
+ | -1 -1 -1 |
+
+ - I also used the clamp function to keep every pixel between 0 and 255.
